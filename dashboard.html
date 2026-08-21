@@ -30,7 +30,7 @@
           <div class="stat-grid"><article><span>Total leads</span><strong>0</strong><small>Ready for your first lead</small></article><article><span>Active follow-ups</span><strong>0</strong><small>No pending follow-ups</small></article><article><span>Converted</span><strong>0</strong><small>Start building connections</small></article></div>
         </section>
         <section class="page-section" id="leadsSection" hidden>
-          <div class="section-heading"><div><p class="eyebrow">Lead management</p><h2>My Leads</h2></div><button type="button">Add new lead</button></div>
+          <div class="section-heading"><div><p class="eyebrow">Lead management</p><h2>My Leads</h2></div><button class="supervisor-only" id="openImportButton" type="button" hidden>Add new leads</button></div>
           <div class="table-card">
             <div class="table-scroll">
               <table>
@@ -73,8 +73,22 @@
     </div>
     <button class="sidebar-overlay" id="sidebarOverlay" type="button" aria-label="Close navigation"></button>
   </main>
+  <div class="modal-backdrop" id="importModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="importTitle">
+      <button class="modal-close" id="closeImportButton" type="button" aria-label="Close">×</button>
+      <p class="eyebrow">Supervisor tools</p><h2 id="importTitle">Import leads</h2>
+      <p class="modal-intro">Upload an Excel or CSV file with the columns <strong>Lead Name, Interest, Email, and Phone</strong>. Timezones are detected from international phone prefixes.</p>
+      <form id="importLeadsForm">
+        <label>Assign leads to<select id="leadOwner" required><option value="">Select a sales owner</option></select></label>
+        <label class="file-drop" for="leadsFile"><span>Choose Excel or CSV file</span><small>.xlsx, .xls, or .csv</small><input id="leadsFile" type="file" accept=".xlsx,.xls,.csv" required></label>
+        <button id="importButton" type="submit">Import leads</button>
+      </form>
+      <p class="form-message" id="importMessage" role="status" aria-live="polite"></p>
+    </section>
+  </div>
   <p class="loading" id="loadingMessage">Checking your session...</p>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/dashboard.js"></script>
 </body>
