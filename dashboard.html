@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Casa Amorosa Leads</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <main class="dashboard" hidden>
+    <header>
+      <div><p class="eyebrow">Casa Amorosa</p><h1>Leads Dashboard</h1></div>
+      <button id="logoutButton" type="button">Sign out</button>
+    </header>
+    <section class="welcome-card">
+      <p>Signed in as</p><strong id="userEmail">Loading account...</strong>
+      <span class="role-badge" id="userRole"></span>
+      <h2>Welcome to your leads workspace</h2>
+      <p>Your authenticated dashboard is ready. Lead-management features can be added here next.</p>
+    </section>
+
+    <section class="user-card" id="userManagement" hidden>
+      <div class="section-heading">
+        <div><p class="eyebrow">Supervisor tools</p><h2>Create a new account</h2></div>
+        <p>Add another supervisor or sales team member.</p>
+      </div>
+      <form id="createUserForm">
+        <label>Full name<input id="newFullName" type="text" autocomplete="name" required></label>
+        <label>Email address<input id="newEmail" type="email" autocomplete="off" required></label>
+        <label>Temporary password<input id="newPassword" type="password" minlength="8" autocomplete="new-password" required></label>
+        <label>Role<select id="newRole" required><option value="sales">Sales</option><option value="supervisor">Supervisor</option></select></label>
+        <button id="createUserButton" type="submit">Create account</button>
+      </form>
+      <p class="form-message" id="createUserMessage" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+  <p class="loading" id="loadingMessage">Checking your session...</p>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
