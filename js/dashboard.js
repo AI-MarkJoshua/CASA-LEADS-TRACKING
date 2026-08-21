@@ -31,6 +31,8 @@ async function requireSession() {
   document.getElementById('welcomeName').textContent = `Welcome, ${displayName}`;
   if (profile.role === 'supervisor') {
     document.querySelector('.supervisor-only').hidden = false;
+    document.querySelectorAll('.owner-column').forEach((column) => { column.hidden = false; });
+    document.getElementById('emptyLeadsCell').colSpan = 7;
   }
   document.getElementById('loadingMessage').hidden = true;
   document.querySelector('.app-shell').hidden = false;

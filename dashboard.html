@@ -31,7 +31,30 @@
         </section>
         <section class="page-section" id="leadsSection" hidden>
           <div class="section-heading"><div><p class="eyebrow">Lead management</p><h2>My Leads</h2></div><button type="button">Add new lead</button></div>
-          <div class="empty-card"><span>◎</span><h3>No leads yet</h3><p>Your assigned and created leads will appear here.</p></div>
+          <div class="table-card">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Lead Name</th>
+                    <th>Interest</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Timezone</th>
+                    <th>Last Activity</th>
+                    <th class="owner-column" hidden>Owner</th>
+                  </tr>
+                </thead>
+                <tbody id="leadsTableBody">
+                  <tr class="empty-row">
+                    <td id="emptyLeadsCell" colspan="6">
+                      <span>◎</span><strong>No leads yet</strong><small>Your assigned and created leads will appear here.</small>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </section>
         <section class="page-section" id="registerSection" hidden>
           <section class="user-card" id="userManagement">
