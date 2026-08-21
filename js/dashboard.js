@@ -24,11 +24,16 @@ async function requireSession() {
   }
 
   document.getElementById('userRole').textContent = profile.role;
+  const displayName = profile.full_name || data.session.user.email.split('@')[0];
+  document.getElementById('sidebarRole').textContent = profile.role;
+  document.getElementById('sidebarName').textContent = displayName;
+  document.getElementById('userInitial').textContent = displayName.charAt(0).toUpperCase();
+  document.getElementById('welcomeName').textContent = `Welcome, ${displayName}`;
   if (profile.role === 'supervisor') {
-    document.getElementById('userManagement').hidden = false;
+    document.querySelector('.supervisor-only').hidden = false;
   }
   document.getElementById('loadingMessage').hidden = true;
-  document.querySelector('.dashboard').hidden = false;
+  document.querySelector('.app-shell').hidden = false;
 }
 
 document.getElementById('logoutButton').addEventListener('click', async () => {
@@ -41,6 +46,26 @@ dashboardClient.auth.onAuthStateChange((event) => {
 });
 
 requireSession();
+
+const sectionTitles = { dashboardSection: 'Dashboard', leadsSection: 'My Leads', registerSection: 'Register Account' };
+document.querySelectorAll('.nav-link').forEach((link) => {
+  link.addEventListener('click', () => {
+    document.querySelectorAll('.nav-link').forEach((item) => item.classList.remove('active'));
+    document.querySelectorAll('.page-section').forEach((section) => { section.hidden = true; section.classList.remove('active'); });
+    const target = document.getElementById(link.dataset.section);
+    target.hidden = false;
+    target.classList.add('active');
+    link.classList.add('active');
+    document.getElementById('pageTitle').textContent = sectionTitles[link.dataset.section];
+    closeSidebar();
+  });
+});
+
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+document.getElementById('menuButton').addEventListener('click', () => { sidebar.classList.add('open'); sidebarOverlay.classList.add('show'); });
+sidebarOverlay.addEventListener('click', closeSidebar);
+function closeSidebar() { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('show'); }
 
 document.getElementById('createUserForm').addEventListener('submit', async (event) => {
   event.preventDefault();
