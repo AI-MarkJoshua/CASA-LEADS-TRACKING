@@ -30,7 +30,37 @@
           <div class="stat-grid"><article><span>Total leads</span><strong>0</strong><small>Ready for your first lead</small></article><article><span>Active follow-ups</span><strong>0</strong><small>No pending follow-ups</small></article><article><span>Converted</span><strong>0</strong><small>Start building connections</small></article></div>
         </section>
         <section class="page-section" id="leadsSection" hidden>
-          <div class="section-heading"><div><p class="eyebrow">Lead management</p><h2>My Leads</h2></div><button class="supervisor-only" id="openImportButton" type="button" hidden>Add new leads</button></div>
+          <div class="lead-add-row supervisor-only" hidden>
+            <button id="openImportButton" type="button">Add new leads</button>
+          </div>
+          <div class="leads-toolbar">
+            <div class="leads-title"><p class="eyebrow">Lead management</p><h2>My Leads</h2></div>
+            <div class="lead-actions">
+              <label class="lead-search" for="leadSearch">
+                <span>Search</span>
+                <input id="leadSearch" type="search" placeholder="Name, interest, or phone" autocomplete="off">
+              </label>
+              <label for="statusFilter">View status</label>
+              <select id="statusFilter">
+                <option value="all">All leads</option>
+                <option value="new">New</option>
+                <option value="qualified">Qualified</option>
+                <option value="unqualified">Unqualified</option>
+                <option value="voicemail">Voicemail</option>
+                <option value="contacted">Contacted</option>
+                <option value="call_no_answer">Call No Answer</option>
+              </select>
+              <label for="timezoneFilter">Timezone</label>
+              <select id="timezoneFilter">
+                <option value="all">All timezones</option>
+                <option value="Eastern">Eastern</option>
+                <option value="Central">Central</option>
+                <option value="Mountain">Mountain</option>
+                <option value="Pacific">Pacific</option>
+                <option value="Unknown">Unknown</option>
+              </select>
+            </div>
+          </div>
           <div class="table-card">
             <div class="table-scroll">
               <table>
@@ -41,18 +71,34 @@
                     <th>Email</th>
                     <th>Phone</th>
                     <th>Timezone</th>
+                    <th>Status</th>
                     <th>Last Activity</th>
                     <th class="owner-column" hidden>Owner</th>
                   </tr>
                 </thead>
                 <tbody id="leadsTableBody">
                   <tr class="empty-row">
-                    <td id="emptyLeadsCell" colspan="6">
+                    <td id="emptyLeadsCell" colspan="7">
                       <span>◎</span><strong>No leads yet</strong><small>Your assigned and created leads will appear here.</small>
                     </td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <div class="table-pagination" id="tablePagination">
+              <span id="paginationSummary">0 leads</span>
+              <div class="pagination-controls">
+                <label for="pageSize">Rows</label>
+                <select id="pageSize">
+                  <option value="10" selected>10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+                <button id="previousPage" type="button">Previous</button>
+                <span id="pageIndicator">Page 1 of 1</span>
+                <button id="nextPage" type="button">Next</button>
+              </div>
             </div>
           </div>
         </section>
@@ -77,7 +123,7 @@
     <section class="modal" role="dialog" aria-modal="true" aria-labelledby="importTitle">
       <button class="modal-close" id="closeImportButton" type="button" aria-label="Close">×</button>
       <p class="eyebrow">Supervisor tools</p><h2 id="importTitle">Import leads</h2>
-      <p class="modal-intro">Upload an Excel or CSV file with the columns <strong>Lead Name, Interest, Email, and Phone</strong>. Timezones are detected from international phone prefixes.</p>
+      <p class="modal-intro">Upload an Excel or CSV file with <strong>Lead Name and Email</strong>. Phone, Status, Status Date, Interest, and Note are also supported. Missing statuses start as New.</p>
       <form id="importLeadsForm">
         <label>Assign leads to<select id="leadOwner" required><option value="">Select a sales owner</option></select></label>
         <label class="file-drop" for="leadsFile"><span>Choose Excel or CSV file</span><small>.xlsx, .xls, or .csv</small><input id="leadsFile" type="file" accept=".xlsx,.xls,.csv" required></label>
@@ -85,6 +131,36 @@
       </form>
       <p class="form-message" id="importMessage" role="status" aria-live="polite"></p>
     </section>
+  </div>
+  <button class="lead-drawer-overlay" id="leadDrawerOverlay" type="button" aria-label="Close lead details" hidden></button>
+  <aside class="lead-drawer" id="leadDrawer" aria-labelledby="leadDrawerTitle" hidden>
+    <button class="modal-close" id="closeLeadDrawer" type="button" aria-label="Close lead details">&times;</button>
+    <p class="eyebrow">Lead details</p>
+    <h2 id="leadDrawerTitle">Lead information</h2>
+    <dl class="lead-details">
+      <div><dt>Lead name</dt><dd id="detailName"></dd><button class="copy-detail" type="button" data-copy-target="detailName" aria-label="Copy lead name" title="Copy lead name"></button></div>
+      <div><dt>Email</dt><dd id="detailEmail"></dd><button class="copy-detail" type="button" data-copy-target="detailEmail" aria-label="Copy email" title="Copy email"></button></div>
+      <div><dt>Phone</dt><dd id="detailPhone"></dd><button class="copy-detail" type="button" data-copy-target="detailPhone" aria-label="Copy phone" title="Copy phone"></button></div>
+      <div><dt>Interest</dt><dd id="detailInterest"></dd><button class="copy-detail" type="button" data-copy-target="detailInterest" aria-label="Copy interest" title="Copy interest"></button></div>
+      <div><dt>Timezone</dt><dd id="detailTimezone"></dd><button class="copy-detail" type="button" data-copy-target="detailTimezone" aria-label="Copy timezone" title="Copy timezone"></button></div>
+      <div><dt>Status</dt><dd id="detailStatus"></dd><button class="copy-detail" type="button" data-copy-target="detailStatus" aria-label="Copy status" title="Copy status"></button></div>
+      <div><dt>Last activity</dt><dd id="detailActivity"></dd><button class="copy-detail" type="button" data-copy-target="detailActivity" aria-label="Copy last activity" title="Copy last activity"></button></div>
+      <div><dt>Sales owner</dt><dd id="detailOwner"></dd><button class="copy-detail" type="button" data-copy-target="detailOwner" aria-label="Copy sales owner" title="Copy sales owner"></button></div>
+    </dl>
+    <section class="last-note" aria-labelledby="lastNoteTitle">
+      <div class="last-note-heading"><h3 id="lastNoteTitle">Last note</h3><time id="lastNoteDate"></time></div>
+      <p id="lastNoteText">No notes yet.</p>
+    </section>
+    <form id="leadNoteForm" class="lead-note-form">
+      <label for="detailNote">Add note</label>
+      <textarea id="detailNote" rows="5" placeholder="Write a new note about this lead..." required></textarea>
+      <button id="saveNoteButton" type="submit">Add note</button>
+    </form>
+    <p class="form-message" id="noteMessage" role="status" aria-live="polite"></p>
+  </aside>
+  <div class="toast" id="actionToast" role="status" aria-live="polite" aria-atomic="true" hidden>
+    <span class="toast-icon" aria-hidden="true"></span>
+    <span id="toastMessage"></span>
   </div>
   <p class="loading" id="loadingMessage">Checking your session...</p>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
