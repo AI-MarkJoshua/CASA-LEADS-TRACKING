@@ -30,17 +30,12 @@
           <div class="stat-grid"><article><span>Total leads</span><strong>0</strong><small>Ready for your first lead</small></article><article><span>Active follow-ups</span><strong>0</strong><small>No pending follow-ups</small></article><article><span>Converted</span><strong>0</strong><small>Start building connections</small></article></div>
         </section>
         <section class="page-section" id="leadsSection" hidden>
-          <div class="lead-add-row supervisor-only" hidden>
-            <button id="openImportButton" type="button">Add new leads</button>
-          </div>
-          <div class="leads-toolbar">
-            <div class="leads-title"><p class="eyebrow">Lead management</p><h2>My Leads</h2></div>
-            <div class="lead-actions">
+          <div class="lead-actions">
               <label class="lead-search" for="leadSearch">
                 <span>Search</span>
                 <input id="leadSearch" type="search" placeholder="Name, interest, or phone" autocomplete="off">
               </label>
-              <label for="statusFilter">View status</label>
+              <label for="statusFilter">Status</label>
               <select id="statusFilter">
                 <option value="all">All leads</option>
                 <option value="new">New</option>
@@ -59,13 +54,23 @@
                 <option value="Pacific">Pacific</option>
                 <option value="Unknown">Unknown</option>
               </select>
-            </div>
+              <label class="owner-filter supervisor-only" for="ownerFilter" hidden>
+                <span>Sales owner</span>
+                <select id="ownerFilter">
+                  <option value="all">All sales owners</option>
+                </select>
+              </label>
+              <div class="lead-admin-actions supervisor-only" hidden>
+                <button id="openMoveLeadsButton" type="button">Move leads</button>
+                <button id="openImportButton" type="button">Add new leads</button>
+              </div>
           </div>
           <div class="table-card">
             <div class="table-scroll">
               <table>
                 <thead>
                   <tr>
+                    <th class="selection-column supervisor-only" hidden><input id="selectPageLeads" type="checkbox" aria-label="Select all leads on this page"></th>
                     <th>Lead Name</th>
                     <th>Interest</th>
                     <th>Email</th>
@@ -119,17 +124,131 @@
     </div>
     <button class="sidebar-overlay" id="sidebarOverlay" type="button" aria-label="Close navigation"></button>
   </main>
+  <div class="modal-backdrop" id="addLeadChoiceModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="addLeadChoiceTitle">
+      <button class="modal-close" id="closeAddLeadChoice" type="button" aria-label="Close">&times;</button>
+      <p class="eyebrow">Supervisor tools</p><h2 id="addLeadChoiceTitle">Add new leads</h2>
+      <p class="modal-intro">Choose how you want to add leads to the system.</p>
+      <div class="add-lead-options">
+        <button id="chooseSingleLead" type="button"><strong>Single lead</strong><span>Add one lead using a form</span></button>
+        <button id="chooseMultipleLeads" type="button"><strong>Multiple leads</strong><span>Upload an Excel or CSV file</span></button>
+      </div>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="moveLeadsModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="moveLeadsTitle">
+      <button class="modal-close" id="closeMoveLeads" type="button" aria-label="Close">&times;</button>
+      <p class="eyebrow">Supervisor tools</p><h2 id="moveLeadsTitle">Move leads</h2>
+      <p class="modal-intro">Move all leads from one sales owner and distribute them evenly across one or more new owners.</p>
+      <form id="moveLeadsForm" class="move-leads-form">
+        <label>Move leads from<select id="moveFromOwner" required><option value="">Select current sales owner</option></select></label>
+        <label>Lead status<select id="moveLeadStatus">
+          <option value="all">All statuses</option>
+          <option value="new">New</option>
+          <option value="qualified">Qualified</option>
+          <option value="unqualified">Unqualified</option>
+          <option value="voicemail">Voicemail</option>
+          <option value="contacted">Contacted</option>
+          <option value="call_no_answer">Call No Answer</option>
+        </select></label>
+        <div class="move-availability" id="moveLeadAvailability">Select a sales owner to see available leads.</div>
+        <label>Number of leads to move<input id="moveLeadQuantity" type="number" min="1" placeholder="Select an owner first" disabled required></label>
+        <fieldset class="owner-picker">
+          <legend>Move leads to</legend>
+          <small>Select one or more destination sales owners.</small>
+          <div class="owner-checklist" id="moveToOwners"><span>Loading sales owners...</span></div>
+        </fieldset>
+        <button id="reviewMoveLeads" type="submit">Review move</button>
+      </form>
+      <div class="move-confirmation" id="moveConfirmation" hidden>
+        <p id="moveConfirmationText"></p>
+        <div class="confirmation-actions">
+          <button id="cancelMoveLeads" type="button">Back</button>
+          <button id="confirmMoveLeads" type="button">Confirm move</button>
+        </div>
+      </div>
+      <p class="form-message" id="moveLeadsMessage" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="singleLeadModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="singleLeadTitle">
+      <button class="modal-close" id="closeSingleLead" type="button" aria-label="Close">&times;</button>
+      <p class="eyebrow">Supervisor tools</p><h2 id="singleLeadTitle">Add single lead</h2>
+      <form id="singleLeadForm" class="single-lead-form">
+        <label>Lead name<input id="singleLeadName" type="text" required></label>
+        <label>Email<input id="singleLeadEmail" type="email" required></label>
+        <label>Phone<input id="singleLeadPhone" type="tel"></label>
+        <label>Interest<input id="singleLeadInterest" type="text"></label>
+        <label>Assign to<select id="singleLeadOwner" required><option value="">Select a sales owner</option></select></label>
+        <button id="createSingleLeadButton" type="submit">Review lead</button>
+      </form>
+      <p class="form-message" id="singleLeadMessage" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="confirmSingleLeadModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmSingleLeadTitle">
+      <button class="modal-close" id="closeConfirmSingleLead" type="button" aria-label="Back to single lead form">&times;</button>
+      <p class="eyebrow">Review information</p><h2 id="confirmSingleLeadTitle">Confirm new lead</h2>
+      <p class="modal-intro">Please confirm that the information below is correct before creating the lead.</p>
+      <dl class="confirmation-details">
+        <div><dt>Lead name</dt><dd id="confirmLeadName"></dd></div>
+        <div><dt>Email</dt><dd id="confirmLeadEmail"></dd></div>
+        <div><dt>Phone</dt><dd id="confirmLeadPhone"></dd></div>
+        <div><dt>Interest</dt><dd id="confirmLeadInterest"></dd></div>
+        <div><dt>Timezone</dt><dd id="confirmLeadTimezone"></dd></div>
+        <div><dt>Assign to</dt><dd id="confirmLeadOwner"></dd></div>
+        <div><dt>Status</dt><dd>New</dd></div>
+        <div><dt>Last activity</dt><dd>No activity</dd></div>
+      </dl>
+      <div class="confirmation-actions">
+        <button id="backToSingleLead" type="button">Back</button>
+        <button id="confirmCreateSingleLead" type="button">Confirm and create</button>
+        <button class="force-action" id="forceCreateSingleLead" type="button" hidden>Force create duplicate</button>
+      </div>
+      <p class="form-message" id="confirmSingleLeadMessage" role="status" aria-live="polite"></p>
+    </section>
+  </div>
   <div class="modal-backdrop" id="importModal" hidden>
     <section class="modal" role="dialog" aria-modal="true" aria-labelledby="importTitle">
       <button class="modal-close" id="closeImportButton" type="button" aria-label="Close">×</button>
       <p class="eyebrow">Supervisor tools</p><h2 id="importTitle">Import leads</h2>
       <p class="modal-intro">Upload an Excel or CSV file with <strong>Lead Name and Email</strong>. Phone, Status, Status Date, Interest, and Note are also supported. Missing statuses start as New.</p>
       <form id="importLeadsForm">
-        <label>Assign leads to<select id="leadOwner" required><option value="">Select a sales owner</option></select></label>
+        <fieldset class="owner-picker">
+          <legend>Assign leads to</legend>
+          <small>Select one or more sales owners. Leads will be distributed evenly.</small>
+          <div class="owner-checklist" id="leadOwners"><span>Loading sales owners...</span></div>
+        </fieldset>
         <label class="file-drop" for="leadsFile"><span>Choose Excel or CSV file</span><small>.xlsx, .xls, or .csv</small><input id="leadsFile" type="file" accept=".xlsx,.xls,.csv" required></label>
         <button id="importButton" type="submit">Import leads</button>
       </form>
+      <button class="force-action force-import" id="forceImportButton" type="button" hidden>Force import duplicates</button>
       <p class="form-message" id="importMessage" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="reassignSelectedModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="reassignSelectedTitle">
+      <button class="modal-close" id="closeReassignSelected" type="button" aria-label="Close">&times;</button>
+      <p class="eyebrow">Supervisor tools</p><h2 id="reassignSelectedTitle">Reassign selected leads</h2>
+      <p class="modal-intro" id="reassignSelectedIntro">Choose one or more destination sales owners.</p>
+      <fieldset class="owner-picker">
+        <legend>Reassign to</legend>
+        <small>Selected leads will be distributed evenly.</small>
+        <div class="owner-checklist" id="selectedLeadOwners"><span>Loading sales owners...</span></div>
+      </fieldset>
+      <button class="primary-modal-action" id="confirmSelectedReassignment" type="button">Confirm reassignment</button>
+      <p class="form-message" id="reassignSelectedMessage" role="status" aria-live="polite"></p>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="statusConfirmationModal" hidden>
+    <section class="modal status-confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="statusConfirmationTitle">
+      <button class="modal-close" id="closeStatusConfirmation" type="button" aria-label="Cancel status change">&times;</button>
+      <p class="eyebrow">Confirm status change</p><h2 id="statusConfirmationTitle">Change lead status?</h2>
+      <p class="status-confirmation-text" id="statusConfirmationText"></p>
+      <div class="confirmation-actions status-confirmation-actions">
+        <button id="cancelStatusChange" type="button">Cancel</button>
+        <button id="confirmStatusChange" type="button">Confirm change</button>
+      </div>
     </section>
   </div>
   <button class="lead-drawer-overlay" id="leadDrawerOverlay" type="button" aria-label="Close lead details" hidden></button>
@@ -147,20 +266,34 @@
       <div><dt>Last activity</dt><dd id="detailActivity"></dd><button class="copy-detail" type="button" data-copy-target="detailActivity" aria-label="Copy last activity" title="Copy last activity"></button></div>
       <div><dt>Sales owner</dt><dd id="detailOwner"></dd><button class="copy-detail" type="button" data-copy-target="detailOwner" aria-label="Copy sales owner" title="Copy sales owner"></button></div>
     </dl>
-    <section class="last-note" aria-labelledby="lastNoteTitle">
-      <div class="last-note-heading"><h3 id="lastNoteTitle">Last note</h3><time id="lastNoteDate"></time></div>
-      <p id="lastNoteText">No notes yet.</p>
-    </section>
-    <form id="leadNoteForm" class="lead-note-form">
-      <label for="detailNote">Add note</label>
-      <textarea id="detailNote" rows="5" placeholder="Write a new note about this lead..." required></textarea>
-      <button id="saveNoteButton" type="submit">Add note</button>
-    </form>
-    <p class="form-message" id="noteMessage" role="status" aria-live="polite"></p>
+    <details class="note-history" id="noteHistory">
+      <summary><span>Notes</span><small id="noteHistoryCount">0</small></summary>
+      <div class="note-history-content">
+        <div class="note-history-list" id="noteHistoryList"><p>No notes added.</p></div>
+        <button class="open-note-form" id="openAddNoteForm" type="button">Add note</button>
+        <form id="leadNoteForm" class="lead-note-form" hidden>
+          <label for="detailNote">New note</label>
+          <textarea id="detailNote" rows="5" placeholder="Write a new note about this lead..." required></textarea>
+          <div class="note-form-actions">
+            <button id="cancelAddNote" type="button">Cancel</button>
+            <button id="saveNoteButton" type="submit">Save note</button>
+          </div>
+        </form>
+        <p class="form-message" id="noteMessage" role="status" aria-live="polite"></p>
+      </div>
+    </details>
+    <details class="note-history activity-history" id="activityHistory">
+      <summary><span>Activity history</span><small id="activityHistoryCount">0</small></summary>
+      <div class="note-history-list activity-history-list" id="activityHistoryList"><p>No activity recorded.</p></div>
+    </details>
   </aside>
   <div class="toast" id="actionToast" role="status" aria-live="polite" aria-atomic="true" hidden>
     <span class="toast-icon" aria-hidden="true"></span>
     <span id="toastMessage"></span>
+  </div>
+  <div class="bulk-selection-bar" id="bulkSelectionBar" hidden>
+    <span id="bulkSelectionSummary">0 of 0 selected</span>
+    <button id="reassignSelectedButton" type="button">Reassign</button>
   </div>
   <p class="loading" id="loadingMessage">Checking your session...</p>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
