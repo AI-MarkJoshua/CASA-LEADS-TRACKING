@@ -410,7 +410,38 @@ async function loadLeads() {
     .order('created_at', { ascending: false });
   if (error) { console.error('Unable to load leads:', error); return; }
   loadedLeads = (data || []).map((lead) => ({ ...lead, timezone: detectTimezone(lead.phone) }));
+  updateDashboardCounts();
   renderFilteredLeads();
+}
+
+function updateDashboardCounts() {
+  const countIds = {
+    new: 'newLeadCount',
+    qualified: 'qualifiedLeadCount',
+    unqualified: 'unqualifiedLeadCount',
+    voicemail: 'voicemailLeadCount',
+    contacted: 'contactedLeadCount',
+    call_no_answer: 'callNoAnswerLeadCount'
+  };
+  const counts = Object.fromEntries(leadStatuses.map((status) => [status, 0]));
+  loadedLeads.forEach((lead) => {
+    if (Object.hasOwn(counts, lead.status)) counts[lead.status] += 1;
+  });
+  Object.entries(countIds).forEach(([status, id]) => {
+    document.getElementById(id).textContent = String(counts[status]);
+  });
+  const trackedStatuses = ['qualified', 'unqualified', 'voicemail', 'contacted', 'call_no_answer'];
+  const processedTotal = trackedStatuses.reduce((total, status) => total + counts[status], 0);
+  document.getElementById('processedLeadCount').textContent = `${processedTotal} total`;
+  trackedStatuses.forEach((status) => {
+    const prefix = status === 'call_no_answer'
+      ? 'callNoAnswer'
+      : status;
+    const percentage = processedTotal ? Math.round((counts[status] / processedTotal) * 100) : 0;
+    document.getElementById(`${prefix}TrackerCount`).textContent = String(counts[status]);
+    document.getElementById(`${prefix}TrackerPercent`).textContent = `${percentage}%`;
+    document.getElementById(`${prefix}TrackerBar`).style.width = `${percentage}%`;
+  });
 }
 
 document.getElementById('statusFilter').addEventListener('change', resetLeadPage);
@@ -627,6 +658,7 @@ async function updateLeadStatus(id, select, dateLabel) {
   dateLabel.textContent = formatActivity(changedAt);
   if (lead) { lead.status = select.value; lead.status_updated_at = changedAt; }
   select.disabled = false;
+  updateDashboardCounts();
   renderFilteredLeads();
   showToast(`Status successfully set to ${formatStatus(select.value)}.`);
 }

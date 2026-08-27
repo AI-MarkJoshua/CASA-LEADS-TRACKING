@@ -27,7 +27,24 @@
       <div class="content">
         <section class="page-section active" id="dashboardSection">
           <div class="welcome-card"><p class="eyebrow">Welcome back</p><h2 id="welcomeName">Welcome to your leads workspace</h2><p>Stay on top of every inquiry, follow-up, and opportunity from one organized place.</p></div>
-          <div class="stat-grid"><article><span>Total leads</span><strong>0</strong><small>Ready for your first lead</small></article><article><span>Active follow-ups</span><strong>0</strong><small>No pending follow-ups</small></article><article><span>Converted</span><strong>0</strong><small>Start building connections</small></article></div>
+          <div class="stat-grid" aria-label="Remaining leads by status">
+            <article class="status-stat status-stat-new"><span>New</span><strong id="newLeadCount">0</strong><small>remaining leads</small></article>
+            <article class="status-stat status-stat-qualified"><span>Qualified</span><strong id="qualifiedLeadCount">0</strong><small>remaining leads</small></article>
+            <article class="status-stat status-stat-unqualified"><span>Unqualified</span><strong id="unqualifiedLeadCount">0</strong><small>remaining leads</small></article>
+            <article class="status-stat status-stat-voicemail"><span>Voicemail</span><strong id="voicemailLeadCount">0</strong><small>remaining leads</small></article>
+            <article class="status-stat status-stat-contacted"><span>Contacted</span><strong id="contactedLeadCount">0</strong><small>remaining leads</small></article>
+            <article class="status-stat status-stat-call-no-answer"><span>Call No Answer</span><strong id="callNoAnswerLeadCount">0</strong><small>remaining leads</small></article>
+          </div>
+          <section class="status-tracker" aria-labelledby="statusTrackerTitle">
+            <div class="status-tracker-heading"><div><p class="eyebrow">Lead tracking</p><h2 id="statusTrackerTitle">Processed leads</h2></div><strong id="processedLeadCount">0 total</strong></div>
+            <div class="status-tracker-list">
+              <div class="tracker-row"><div><span>Qualified</span><strong id="qualifiedTrackerCount">0</strong></div><div class="tracker-bar"><i id="qualifiedTrackerBar"></i></div><small id="qualifiedTrackerPercent">0%</small></div>
+              <div class="tracker-row"><div><span>Unqualified</span><strong id="unqualifiedTrackerCount">0</strong></div><div class="tracker-bar"><i id="unqualifiedTrackerBar"></i></div><small id="unqualifiedTrackerPercent">0%</small></div>
+              <div class="tracker-row"><div><span>Voicemail</span><strong id="voicemailTrackerCount">0</strong></div><div class="tracker-bar"><i id="voicemailTrackerBar"></i></div><small id="voicemailTrackerPercent">0%</small></div>
+              <div class="tracker-row"><div><span>Contacted</span><strong id="contactedTrackerCount">0</strong></div><div class="tracker-bar"><i id="contactedTrackerBar"></i></div><small id="contactedTrackerPercent">0%</small></div>
+              <div class="tracker-row"><div><span>Call No Answer</span><strong id="callNoAnswerTrackerCount">0</strong></div><div class="tracker-bar"><i id="callNoAnswerTrackerBar"></i></div><small id="callNoAnswerTrackerPercent">0%</small></div>
+            </div>
+          </section>
         </section>
         <section class="page-section" id="leadsSection" hidden>
           <div class="lead-actions">
@@ -299,6 +316,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="js/config.js"></script>
-  <script src="js/dashboard.js?v=20260827-5"></script>
+  <script src="js/dashboard.js?v=20260827-7"></script>
 </body>
 </html>
