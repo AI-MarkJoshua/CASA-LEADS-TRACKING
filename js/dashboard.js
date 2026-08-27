@@ -3,6 +3,7 @@ const dashboardClient = supabase.createClient(
   window.CASA_CONFIG.supabasePublishableKey
 );
 let currentUserRole = null;
+let currentUserEmail = null;
 let loadedLeads = [];
 let selectedLeadId = null;
 let currentPage = 1;
@@ -22,6 +23,7 @@ async function requireSession() {
     return;
   }
   document.getElementById('userEmail').textContent = data.session.user.email;
+  currentUserEmail = data.session.user.email;
 
   const { data: profile, error: profileError } = await dashboardClient
     .from('profiles')
@@ -574,6 +576,12 @@ document.getElementById('cancelStatusChange').addEventListener('click', cancelSt
 statusConfirmationModal.addEventListener('click', (event) => { if (event.target === statusConfirmationModal) cancelStatusChange(); });
 
 function requestStatusChange(lead, select, dateLabel) {
+  if (lead.status !== 'new' && select.value === 'new') {
+    select.value = lead.status;
+    select.className = `status-select status-${lead.status}`;
+    showToast('A lead cannot be changed back to New after activity has started.', 'error');
+    return;
+  }
   pendingStatusChange = { lead, select, dateLabel, previousStatus: lead.status };
   const newStatus = formatStatus(select.value);
   document.getElementById('statusConfirmationText').textContent = lead.status === 'new'
@@ -605,13 +613,18 @@ document.getElementById('confirmStatusChange').addEventListener('click', async (
 });
 
 async function updateLeadStatus(id, select, dateLabel) {
+  const lead = loadedLeads.find((item) => item.id === id);
+  if (lead?.status !== 'new' && select.value === 'new') {
+    select.value = lead.status;
+    showToast('A lead cannot be changed back to New after activity has started.', 'error');
+    return;
+  }
   select.disabled = true;
   const changedAt = new Date().toISOString();
   const { error } = await dashboardClient.from('leads').update({ status: select.value, status_updated_at: changedAt }).eq('id', id);
   if (error) { showToast('Status could not be updated.', 'error'); await loadLeads(); return; }
   select.className = `status-select status-${select.value}`;
   dateLabel.textContent = formatActivity(changedAt);
-  const lead = loadedLeads.find((item) => item.id === id);
   if (lead) { lead.status = select.value; lead.status_updated_at = changedAt; }
   select.disabled = false;
   renderFilteredLeads();
@@ -791,11 +804,21 @@ async function loadNoteHistory(lead) {
   const count = document.getElementById('noteHistoryCount');
   list.replaceChildren(Object.assign(document.createElement('p'), { textContent: 'Loading...' }));
   count.textContent = '0';
-  const { data, error } = await dashboardClient
+  let { data, error } = await dashboardClient
     .from('lead_notes')
-    .select('note, created_at')
+    .select('note, created_by_name, created_at')
     .eq('lead_id', lead.id)
     .order('created_at', { ascending: false });
+  // Keep the complete history visible while the author-name migration is pending.
+  if (error) {
+    const legacyResult = await dashboardClient
+      .from('lead_notes')
+      .select('note, created_at')
+      .eq('lead_id', lead.id)
+      .order('created_at', { ascending: false });
+    data = legacyResult.data?.map((entry) => ({ ...entry, created_by_name: null }));
+    error = legacyResult.error;
+  }
   if (selectedLeadId !== lead.id) return;
   if (error) {
     console.error('Unable to load note history:', error);
@@ -813,7 +836,9 @@ async function loadNoteHistory(lead) {
   notes.forEach((entry) => {
     const item = document.createElement('article');
     const text = document.createElement('p'); text.textContent = entry.note;
-    const date = document.createElement('time'); date.textContent = entry.created_at ? formatActivity(entry.created_at) : '';
+    const date = document.createElement('time');
+    const author = entry.created_by_name || 'Email unavailable';
+    date.textContent = entry.created_at ? `${author} - ${formatActivity(entry.created_at)}` : author;
     item.append(text, date); list.appendChild(item);
   });
 }
@@ -847,7 +872,11 @@ document.getElementById('leadNoteForm').addEventListener('submit', async (event)
   button.disabled = true;
   message.textContent = '';
   const leadId = selectedLeadId;
-  const { error } = await dashboardClient.from('lead_notes').insert({ lead_id: leadId, note });
+  const { error } = await dashboardClient.from('lead_notes').insert({
+    lead_id: leadId,
+    note,
+    created_by_name: currentUserEmail
+  });
   if (error) {
     message.className = 'form-message error';
     message.textContent = 'Notes could not be saved.';
